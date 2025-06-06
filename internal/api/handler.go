@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -29,8 +28,6 @@ func (h *handler) GETJob(c *gin.Context) {
 			"error": err.Error(),
 		})
 	}
-
-	fmt.Println(id)
 
 	job, err := h.JobService.ListJob(id)
 	if err != nil {
@@ -67,6 +64,9 @@ func (h *handler) POSTJob(c *gin.Context) {
 		})
 		return
 	}
+
+	req.Result = "Not completed"
+	req.Status = "todo"
 
 	err := h.JobService.CreateJob(&req)
 	if err != nil {
