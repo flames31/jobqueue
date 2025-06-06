@@ -23,7 +23,7 @@ func main() {
 	}
 
 	jobService := service.NewJobService(jobsDB)
-	queue := queue.NewJobQueue(100)
+	queue := queue.NewJobQueue(100, jobsDB)
 	queue.Start(5)
 
 	handler := api.NewHandler(jobService, queue)

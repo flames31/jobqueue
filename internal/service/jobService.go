@@ -39,7 +39,7 @@ func (js *JobService) ListAllJobs() ([]model.Job, error) {
 func (js *JobService) ListJob(id int) (model.Job, error) {
 
 	var job model.Job
-	err := js.jobDB.First(&job, 1).Error
+	err := js.jobDB.First(&job, id).Error
 
 	if err != nil {
 		return model.Job{}, fmt.Errorf("failed to list job: %w", err)

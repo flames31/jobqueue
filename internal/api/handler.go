@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -25,16 +26,19 @@ func (h *handler) GETJob(c *gin.Context) {
 	if err != nil {
 		log.Printf("Error getting job : %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
 	}
+
+	fmt.Println(id)
 
 	job, err := h.JobService.ListJob(id)
 	if err != nil {
 		log.Printf("Error getting job : %v", err)
-		c.JSON(http.StatusNoContent, gin.H{
-			"error": err,
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, job)
@@ -46,8 +50,9 @@ func (h *handler) GETAllJobs(c *gin.Context) {
 	if err != nil {
 		log.Printf("Error getting all job : %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
+		return
 	}
 
 	c.JSON(http.StatusOK, jobs)
@@ -58,16 +63,18 @@ func (h *handler) POSTJob(c *gin.Context) {
 	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
 		log.Printf("Error getting job : %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
+		return
 	}
 
 	err := h.JobService.CreateJob(&req)
 	if err != nil {
 		log.Printf("Error getting job : %v", err)
 		c.JSON(http.StatusNoContent, gin.H{
-			"error": err,
+			"error": err.Error(),
 		})
+		return
 	}
 
 	h.JobQueue.Jobs <- req
