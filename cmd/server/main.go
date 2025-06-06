@@ -5,6 +5,7 @@ import (
 
 	"github.com/flames31/jobqueue/internal/api"
 	"github.com/flames31/jobqueue/internal/db"
+	"github.com/flames31/jobqueue/internal/queue"
 	"github.com/flames31/jobqueue/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -22,7 +23,10 @@ func main() {
 	}
 
 	jobService := service.NewJobService(jobsDB)
-	handler := api.NewHandler(jobService)
+	queue := queue.NewJobQueue(100)
+	queue.Start(5)
+
+	handler := api.NewHandler(jobService, queue)
 
 	r := gin.Default()
 

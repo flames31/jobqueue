@@ -6,16 +6,18 @@ import (
 	"strconv"
 
 	"github.com/flames31/jobqueue/internal/model"
+	"github.com/flames31/jobqueue/internal/queue"
 	"github.com/flames31/jobqueue/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
 type handler struct {
 	JobService *service.JobService
+	JobQueue   *queue.JobQueue
 }
 
-func NewHandler(jobService *service.JobService) *handler {
-	return &handler{JobService: jobService}
+func NewHandler(jobService *service.JobService, jobQueue *queue.JobQueue) *handler {
+	return &handler{JobService: jobService, JobQueue: jobQueue}
 }
 
 func (h *handler) GETJob(c *gin.Context) {
@@ -68,7 +70,7 @@ func (h *handler) POSTJob(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"message": "job created succesfully",
-	})
+	h.JobQueue.Jobs <- req
+
+	c.JSON(http.StatusOK, req)
 }
