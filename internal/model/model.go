@@ -9,4 +9,12 @@ type Job struct {
 	Description string
 	Status      string
 	Result      string
+	UserID      uint
+}
+
+type User struct {
+	gorm.Model
+	Email        string `gorm:"unique"`
+	PasswordHash string
+	Jobs         []Job `gorm:"constraint:OnDelete:CASCADE;"`
 }

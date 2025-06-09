@@ -30,7 +30,7 @@ func InitDB() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&model.Job{})
+	db.AutoMigrate(&model.Job{}, &model.User{})
 
 	return db, nil
 }

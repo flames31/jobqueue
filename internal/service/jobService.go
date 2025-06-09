@@ -11,12 +11,7 @@ type JobService struct {
 	jobDB *gorm.DB
 }
 
-func NewJobService(jobDB *gorm.DB) *JobService {
-	return &JobService{jobDB: jobDB}
-}
-
 func (js *JobService) CreateJob(job *model.Job) error {
-	fmt.Println(*job)
 	err := js.jobDB.Create(job).Error
 	if err != nil {
 		return fmt.Errorf("failed to create job: %w", err)
@@ -25,9 +20,9 @@ func (js *JobService) CreateJob(job *model.Job) error {
 	return nil
 }
 
-func (js *JobService) ListAllJobs() ([]model.Job, error) {
+func (js *JobService) ListAllJobs(userID uint) ([]model.Job, error) {
 	var jobs []model.Job
-	err := js.jobDB.Find(&jobs).Error
+	err := js.jobDB.Model(&model.User{}).Association("Jobs").Find(&jobs)
 
 	if err != nil {
 		return []model.Job{}, fmt.Errorf("failed to list all jobs: %w", err)
@@ -36,10 +31,10 @@ func (js *JobService) ListAllJobs() ([]model.Job, error) {
 	return jobs, nil
 }
 
-func (js *JobService) ListJob(id int) (model.Job, error) {
+func (js *JobService) ListJob(jobID int) (model.Job, error) {
 
 	var job model.Job
-	err := js.jobDB.First(&job, id).Error
+	err := js.jobDB.First(&job, jobID).Error
 
 	if err != nil {
 		return model.Job{}, fmt.Errorf("failed to list job: %w", err)
