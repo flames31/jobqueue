@@ -2,9 +2,11 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/flames31/jobqueue/internal/api"
 	"github.com/flames31/jobqueue/internal/db"
+	"github.com/flames31/jobqueue/internal/middleware"
 	"github.com/flames31/jobqueue/internal/queue"
 	"github.com/flames31/jobqueue/internal/service"
 	"github.com/gin-gonic/gin"
@@ -17,21 +19,33 @@ func main() {
 		log.Fatalf("ERROR loading env : %v", err)
 	}
 
-	jobsDB, err := db.InitDB()
+	dbConn, err := db.InitDB()
 	if err != nil {
 		log.Fatalf("ERROR during DB init : %v", err)
 	}
 
-	jobService := service.NewJobService(jobsDB)
-	queue := queue.NewJobQueue(100, jobsDB)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("NO JWT SECRET SET!")
+	}
+	newService := service.NewService(dbConn)
+	queue := queue.NewJobQueue(100, dbConn)
 	queue.Start(5)
 
-	handler := api.NewHandler(jobService, queue)
+	handler := api.NewHandler(newService, queue, jwtSecret)
 
 	r := gin.Default()
 
-	r.GET("/jobs", handler.GETAllJobs)
-	r.GET("/jobs/:id", handler.GETJob)
-	r.POST("/jobs", handler.POSTJob)
-	r.Run()
+	r.POST("/register", handler.POSTUserRegister)
+	r.POST("/login", handler.POSTUserLogin)
+
+	protected := r.Group("/api")
+	protected.Use(middleware.JWTMiddleware(jwtSecret))
+	{
+		protected.GET("/jobs", handler.GETAllJobs)
+		protected.GET("/jobs/:id", handler.GETJob)
+		protected.POST("/jobs", handler.POSTJob)
+	}
+
+	r.Run(":8080")
 }
