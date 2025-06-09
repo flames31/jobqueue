@@ -8,7 +8,7 @@ require (
 	gorm.io/gorm v1.30.0
 )
 
-require github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
+require github.com/golang-jwt/jwt/v5 v5.2.2
 
 require (
 	github.com/bytedance/sonic v1.11.6 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/crypto v0.38.0
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect

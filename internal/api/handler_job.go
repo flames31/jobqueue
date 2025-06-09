@@ -16,6 +16,7 @@ func (h *handler) GETJob(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
+		return
 	}
 
 	job, err := h.Service.JobService.ListJob(id)
@@ -37,7 +38,7 @@ func (h *handler) GETJob(c *gin.Context) {
 	}
 	if job.UserID != userID {
 		log.Printf("Error getting job : %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Job not owned by user",
 		})
 		return
