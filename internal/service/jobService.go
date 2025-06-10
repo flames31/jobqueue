@@ -22,7 +22,9 @@ func (js *JobService) CreateJob(job *model.Job) error {
 
 func (js *JobService) ListAllJobs(userID uint) ([]model.Job, error) {
 	var jobs []model.Job
-	err := js.jobDB.Model(&model.User{}).Association("Jobs").Find(&jobs)
+	var user model.User
+	user.ID = userID
+	err := js.jobDB.Model(&user).Association("Jobs").Find(&jobs)
 
 	if err != nil {
 		return []model.Job{}, fmt.Errorf("failed to list all jobs: %w", err)
