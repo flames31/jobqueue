@@ -4,8 +4,10 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/flames31/jobqueue/internal/model"
+	"github.com/flames31/jobqueue/internal/pubsub"
 	"github.com/gin-gonic/gin"
 )
 
@@ -70,8 +72,8 @@ func (h *handler) GETAllJobs(c *gin.Context) {
 }
 
 func (h *handler) POSTJob(c *gin.Context) {
-	var req model.Job
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
+	var job model.Job
+	if err := c.ShouldBindBodyWithJSON(&job); err != nil {
 		log.Printf("Error getting job : %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
@@ -88,11 +90,11 @@ func (h *handler) POSTJob(c *gin.Context) {
 		return
 	}
 
-	req.Result = "Not completed"
-	req.Status = "todo"
-	req.UserID = userID
+	job.Result = "Not completed"
+	job.Status = "todo"
+	job.UserID = userID
 
-	err := h.Service.JobService.CreateJob(&req)
+	err := h.Service.JobService.CreateJob(&job)
 	if err != nil {
 		log.Printf("Error getting job : %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -101,7 +103,13 @@ func (h *handler) POSTJob(c *gin.Context) {
 		return
 	}
 
-	h.JobQueue.Jobs <- req
+	h.RDSP.Publish(pubsub.JobEvent{
+		Type:    pubsub.EventJobCreated,
+		JobID:   job.ID,
+		UserID:  job.UserID,
+		Payload: map[string]interface{}{"testing Job number": job.ID},
+		Time:    time.Now(),
+	})
 
-	c.JSON(http.StatusOK, req)
+	c.JSON(http.StatusOK, job)
 }

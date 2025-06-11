@@ -7,6 +7,7 @@ import (
 	"github.com/flames31/jobqueue/internal/api"
 	"github.com/flames31/jobqueue/internal/db"
 	"github.com/flames31/jobqueue/internal/middleware"
+	"github.com/flames31/jobqueue/internal/pubsub"
 	"github.com/flames31/jobqueue/internal/queue"
 	"github.com/flames31/jobqueue/internal/service"
 	"github.com/gin-gonic/gin"
@@ -28,11 +29,24 @@ func main() {
 	if jwtSecret == "" {
 		log.Fatal("NO JWT SECRET SET!")
 	}
+
+	redisAddr := os.Getenv("REDIS_ADR")
+	if redisAddr == "" {
+		log.Fatal("NO REDIS ADDR SET!")
+	}
+
+	redisPwd := os.Getenv("REDIS_ADR")
+	if redisPwd == "" {
+		log.Fatal("NO REDIS PASSWORD SET!")
+	}
+
 	newService := service.NewService(dbConn)
 	queue := queue.NewJobQueue(100, dbConn)
 	queue.Start(5)
 
-	handler := api.NewHandler(newService, queue, jwtSecret)
+	redisPublisher := pubsub.NewRedisPublisher(redisAddr, redisPwd, 0, "job-events")
+
+	handler := api.NewHandler(newService, queue, jwtSecret, redisPublisher)
 
 	r := gin.Default()
 
